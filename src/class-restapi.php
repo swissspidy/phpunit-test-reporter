@@ -115,6 +115,21 @@ class RestAPI {
 
 		$env = isset( $parameters['env'] ) ? json_decode( $parameters['env'], true ) : array();
 
+		/*
+		 * Create a unique hash for this report based on the details provided.
+		 *
+		 * This helps avoid overwriting the wrong report when testers submit multiple reports
+		 * using the same environment type or PHP version.
+		 */
+		$report_hash = md5(
+			wp_json_encode(
+				array(
+					'env' => $env,
+					'revision' => $parameters['commit'],
+				)
+			)
+		);
+
 		$php_version = '';
 		if ( isset( $env['php_version'] ) ) {
 			$parts = explode( '.', $env['php_version'] );
@@ -152,6 +167,12 @@ class RestAPI {
 			'numberposts' => 1,
 			'author'      => $current_user->ID,
 			'tax_query'   => $tax_query,
+			'meta_query'  => array(
+				array(
+					'key'   => 'report_hash',
+					'value' => $report_hash,
+				),
+			),
 		) );
 
 		if ( $results ) {
