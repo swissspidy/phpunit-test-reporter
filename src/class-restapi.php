@@ -199,6 +199,8 @@ class RestAPI {
 
 			// Store the results.
 			$post_id = wp_insert_post( $args, true );
+
+			update_post_meta( $post_id, 'report_hash', $report_hash );
 		}
 
 		if ( is_wp_error( $post_id ) ) {
