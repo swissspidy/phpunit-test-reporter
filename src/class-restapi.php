@@ -200,20 +200,19 @@ class RestAPI {
 			// Store the results.
 			$post_id = wp_insert_post( $args, true );
 
+			if ( is_wp_error( $post_id ) ) {
+				return $post_id;
+			}
+
 			update_post_meta( $post_id, 'report_hash', $report_hash );
+			update_post_meta( $post_id, 'env', $env );
+
+			wp_set_object_terms( $post_id, array( $php_version ), 'php-version' );
+			wp_set_object_terms( $post_id, array( $env_type ), 'environment-type' );
 		}
 
-		if ( is_wp_error( $post_id ) ) {
-			return $post_id;
-		}
-
-		wp_set_object_terms( $post_id, array( $php_version ), 'php-version' );
-		wp_set_object_terms( $post_id, array( $env_type ), 'environment-type' );
-
-		$env     = isset( $parameters['env'] ) ? json_decode( $parameters['env'], true ) : array();
 		$results = isset( $parameters['results'] ) ? json_decode( $parameters['results'], true ) : array();
 
-		update_post_meta( $post_id, 'env', $env );
 		update_post_meta( $post_id, 'results', $results );
 
 		self::maybe_send_email_notifications( $parent_id );
